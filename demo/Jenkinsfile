@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script {
                     // Run tests inside Docker container if needed
-                    docker.image("my-spring-boot-app:${env.BUILD_NUMBER}").withRun('-p 8080:8080') {
+                    docker.image("my-spring-boot-app:${env.BUILD_NUMBER}").withRun('-p 8081:8081') {
                         sh 'docker exec CONTAINER_ID mvn test'
                     }
                 }
