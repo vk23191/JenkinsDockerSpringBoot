@@ -1,47 +1,26 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "my-spring-boot-app:${env.BUILD_NUMBER}"
+    }
+
     stages {
         stage('Build') {
             steps {
                 script {
-                    // Build Docker image and tag it
-                    docker.build("my-spring-boot-app:${env.BUILD_NUMBER}")
+                    // Build Docker image
+                    docker.build(DOCKER_IMAGE)
                 }
             }
         }
-        stage('Test') {
+        stage('Cleanup') {
             steps {
                 script {
-                    // Run tests inside Docker container if needed
-                    docker.image("my-spring-boot-app:${env.BUILD_NUMBER}").withRun('-p 8081:8081') {
-                        sh 'docker exec CONTAINER_ID mvn test'
-                    }
+                    // Remove Docker image after build
+                    docker.image(DOCKER_IMAGE).remove()
                 }
             }
-        }
-        stage('Deploy') {
-            steps {
-                script {
-                    // Push Docker image to Docker registry (if needed)
-                    docker.withRegistry('https://registry.example.com', 'docker-credentials-id') {
-                        docker.image("my-spring-boot-app:${env.BUILD_NUMBER}").push()
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Build successful! Deploy your application.'
-            // Clean up Docker resources
-            docker.image("my-spring-boot-app:${env.BUILD_NUMBER}").remove()
-        }
-        failure {
-            echo 'Build failed! Take necessary actions.'
-            // Clean up Docker resources
-            docker.image("my-spring-boot-app:${env.BUILD_NUMBER}").remove()
         }
     }
 }
