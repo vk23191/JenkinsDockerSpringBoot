@@ -1,33 +1,42 @@
 pipeline {
-    agent {
-        docker {
-            // Use a specific Docker image for the build environment
-            image 'maven:3.6.3-jdk-11'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
+     agent any
+
+    tools {
+        // Specify the Maven installation
+        maven 'Maven'
     }
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                // Checkout source code from Git repository
-                git 'https://github.com/your/repo.git'
-                
-                // Build and package the application
-                sh 'mvn clean package'
+                // Checkout source code from GitHub repository
+                git branch: 'main', credentialsId: 'f5fe8d92-8d03-465f-9d5d-6c052451abde', url: 'https://github.com/vk23191/JenkinsDockerSpringBoot.git'
             }
         }
-        stage('Test') {
+
+         stage('Build Docker Image') {
             steps {
-                // Run tests
-                sh 'mvn test'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                // Example: Build and push Docker image
+                // Build Docker image
                 sh 'docker build -t my-app .'
-                sh 'docker run -d -p 8080:8080 my-app'
             }
+        }
+
+        stage('Deploy to Docker') {
+            steps {
+                // Push Docker image to registry (if needed)
+                // sh 'docker push your-registry/my-app'
+
+                // Run Docker container
+                sh 'docker run -d --name my-app -p 8080:8080 your-image-name'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline succeeded! This can include additional notifications or steps upon success.'
+        }
+        failure {
+            echo 'Pipeline failed! This can include cleanup or notifications upon failure.'
         }
     }
 }
