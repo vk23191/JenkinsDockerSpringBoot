@@ -1,17 +1,32 @@
 pipeline {
     agent {
         docker {
-            image 'my-jenkins-agent-image'
+            // Use a specific Docker image for the build environment
+            image 'maven:3.6.3-jdk-11'
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     stages {
         stage('Build') {
             steps {
-                script {
-                    // Build Docker image
-                    sh 'docker build -t my-spring-boot-app:2 .'
-                }
+                // Checkout source code from Git repository
+                git 'https://github.com/your/repo.git'
+                
+                // Build and package the application
+                sh 'mvn clean package'
+            }
+        }
+        stage('Test') {
+            steps {
+                // Run tests
+                sh 'mvn test'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                // Example: Build and push Docker image
+                sh 'docker build -t my-app .'
+                sh 'docker run -d -p 8080:8080 my-app'
             }
         }
     }
