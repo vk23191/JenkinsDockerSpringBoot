@@ -1,24 +1,16 @@
 pipeline {
-    agent any
-
-    environment {
-        DOCKER_IMAGE = "my-spring-boot-app:${env.BUILD_NUMBER}"
+    agent {
+        docker {
+            image 'my-jenkins-agent-image'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
     }
-
     stages {
         stage('Build') {
             steps {
                 script {
                     // Build Docker image
-                    docker.build(DOCKER_IMAGE)
-                }
-            }
-        }
-        stage('Cleanup') {
-            steps {
-                script {
-                    // Remove Docker image after build
-                    docker.image(DOCKER_IMAGE).remove()
+                    sh 'docker build -t my-spring-boot-app:2 .'
                 }
             }
         }
